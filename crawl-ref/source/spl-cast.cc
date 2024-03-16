@@ -2061,6 +2061,16 @@ spret your_spells(spell_type spell, int powc, bool actual_spell,
         if (testbits(flags, spflag::prefer_farthest))
             args.prefer_farthest = true;
 
+        zap_type zap = spell_to_zap(spell);
+        if (zap != NUM_ZAPS)
+        {
+            bolt tempbeam;
+            tempbeam.thrower = KILL_YOU_MISSILE;
+            tempbeam.origin_spell = spell;
+            zappy(zap, 0, false, tempbeam);
+            args.ignore_self = tempbeam.ignores_player();
+        }
+
         // if the spell is useless and we have somehow gotten this far, it's
         // a forced cast. Setting this prevents the direction chooser from
         // looking for selecting a default target (which doesn't factor in

@@ -485,6 +485,7 @@ direction_chooser::direction_chooser(dist& moves_,
     show_boring_feats(args.show_boring_feats),
     hitfunc(args.hitfunc),
     default_place(args.default_place),
+    ignore_self(args.ignore_self),
     renderer(*this),
     unrestricted(args.unrestricted),
     force_cancel(false),
@@ -1175,7 +1176,7 @@ bool direction_chooser::find_default_monster_target(coord_def& result) const
         && hitfunc->can_affect_outside_range()
         && (!hitfunc->set_aim(result)
             || hitfunc->is_affected(result) < AFF_YES
-            || hitfunc->is_affected(you.pos()) > AFF_NO))
+            || (!ignore_self && hitfunc->is_affected(you.pos()) > AFF_NO)))
     {
         coord_def old_result;
         if (success)
@@ -1184,6 +1185,9 @@ bool direction_chooser::find_default_monster_target(coord_def& result) const
         {
             for (aff_type allowed_self_aff : { AFF_NO, AFF_MAYBE, AFF_YES })
             {
+                if (ignore_self && allowed_self_aff != AFF_YES)
+                    continue;
+
                 success = _find_square_wrapper(result, 1,
                                        bind(_find_monster_expl,
                                             placeholders::_1, mode,
